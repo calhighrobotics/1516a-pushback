@@ -29,14 +29,25 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
+	
 	//Basic intitialization of the screen
 	pros::lcd::initialize();
+
+	pros::lcd::print(0, "Calibrating IMU...");
+    sensors.imu->reset(); // start calibration
+
+    while (sensors.imu->is_calibrating()) {
+        pros::delay(20);
+    }
+
 	pros::lcd::set_text(1, "Team 1516A");
 	//Add button to screen
 	pros::lcd::register_btn1_cb(on_center_button);
 
 	chassis.calibrate();
 	chassis.setPose({0, 0, 0});
+
+	// Configure motor brake mode based on brakeMode
 
 }
 
@@ -88,7 +99,20 @@ void opcontrol() {
 
 	while (true) {
 		//Drivetrain Block
-		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));  
-		pros::delay(10);                               // Run for 10 ms then update
+		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
+		
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+            chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+			pros::lcd::print(1, "brake mode");
+        }
+		else{
+			chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+			pros::lcd::print(1, "coast mode");
+		}
+
+
+		double heading = sensors.imu->get_heading();
+		pros::lcd::print(0, "Heading: %.2f", heading);
+		pros::delay(100);                               // Run for 100 ms then update
 	}
 }

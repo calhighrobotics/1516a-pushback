@@ -7,7 +7,7 @@
 namespace Robot {
     namespace Globals {
 
-        // Controller
+    // Controller
         extern pros::Controller controller;
 
         // Motor ports
@@ -27,6 +27,7 @@ namespace Robot {
         extern lemlib::Drivetrain drivetrain;
 
         // Odometry / Sensors
+        extern pros::Imu imu;
         extern lemlib::OdomSensors sensors;
 
         // PID Controllers
@@ -34,9 +35,12 @@ namespace Robot {
         extern lemlib::ControllerSettings angularPID;
 
         // Drive curve
-        extern lemlib::ExpoDriveCurve driveCurve;
+        extern lemlib::ExpoDriveCurve throttleCurve;
+        extern lemlib::ExpoDriveCurve steerCurve;
 
         // Chassis
         extern lemlib::Chassis chassis;
+
+        
     }
 }

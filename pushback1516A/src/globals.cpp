@@ -8,14 +8,14 @@ namespace Robot {
         pros::Controller controller(pros::E_CONTROLLER_MASTER);
         
 
-        signed char LEFT_BACK = -10;
-        signed char LEFT_MID = 9;
-        signed char LEFT_FRONT = -8;
+        signed char LEFT_BACK = 10;
+        signed char LEFT_MID = -9;
+        signed char LEFT_FRONT = 8;
 
 
-        signed char RIGHT_BACK = 18;
-        signed char RIGHT_MID = -19;
-        signed char RIGHT_FRONT = 20;
+        signed char RIGHT_BACK = -18;
+        signed char RIGHT_MID = 19;
+        signed char RIGHT_FRONT = -20;
 
 
         //Initialize the motor group for the left motors with ports 1, 2, and 3, denoting the blue gear cartrige
@@ -25,6 +25,8 @@ namespace Robot {
         //The negative sign for the ports indicate the motors will run in reverse, as one side always must
         pros::MotorGroup right({RIGHT_BACK, RIGHT_MID, RIGHT_FRONT}, pros::v5::MotorGears::blue);
         
+        pros::Imu imu(1); // imu on port 1
+
         lemlib::Drivetrain drivetrain(
             &left, // the left motor group
             &right, // the right motor group
@@ -38,7 +40,7 @@ namespace Robot {
                                     nullptr, // vertical tracking wheel 2, DNE
                                     nullptr, //&horizontal_tracking_wheel, // horizontal tracking wheel
                                     nullptr, // horizontal tracking wheel 2, DNE
-                                    nullptr //&imu // inertial sensor
+                                    &imu // inertial sensor
         );
 
         // Lateral (forward/backward)
@@ -68,14 +70,20 @@ namespace Robot {
         );
 
     
-        lemlib::ExpoDriveCurve driveCurve(5, 12, 1.132); // deadband, minOutput, curve
+        lemlib::ExpoDriveCurve throttleCurve(5, 12, 1.019); // deadband, minOutput, curve
+        lemlib::ExpoDriveCurve steerCurve(5, 12, 1.01); // deadband, minOutput, curve
 
         lemlib::Chassis chassis(
             drivetrain,
             lateralPID,     // lateral PID settings
             angularPID,     // angular PID settings
             sensors,
-            &driveCurve
+            &throttleCurve,
+            &steerCurve
         );
+
+        // Note: do not run executable code at namespace scope. Set the chassis
+        // during runtime initialization (e.g., in initialize()).
+
     }
 }
