@@ -8,14 +8,14 @@ namespace Robot {
         pros::Controller controller(pros::E_CONTROLLER_MASTER);
         
 
-        signed char LEFT_BACK = 10;
-        signed char LEFT_MID = -9;
-        signed char LEFT_FRONT = 8;
+        signed char LEFT_BACK = -10;
+        signed char LEFT_MID = 9;
+        signed char LEFT_FRONT = -8;
 
 
-        signed char RIGHT_BACK = -18;
-        signed char RIGHT_MID = 19;
-        signed char RIGHT_FRONT = -20;
+        signed char RIGHT_BACK = 18;
+        signed char RIGHT_MID = -19;
+        signed char RIGHT_FRONT = 20;
 
 
         //Initialize the motor group for the left motors with ports 1, 2, and 3, denoting the blue gear cartrige

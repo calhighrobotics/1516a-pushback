@@ -1,6 +1,7 @@
 #include "main.h"
 #include "globals.h"
 #include "lemlib/api.hpp"
+#include "pros/misc.h"
 #include "pros/motors.h"
 
 using namespace Robot::Globals;
@@ -99,9 +100,10 @@ void opcontrol() {
 
 	while (true) {
 		//Drivetrain Block
+
 		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 		
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
             chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 			pros::lcd::print(1, "brake mode");
         }
@@ -110,9 +112,8 @@ void opcontrol() {
 			pros::lcd::print(1, "coast mode");
 		}
 
-
 		double heading = sensors.imu->get_heading();
 		pros::lcd::print(0, "Heading: %.2f", heading);
-		pros::delay(100);                               // Run for 100 ms then update
+		pros::delay(50);                               // Run for 100 ms then update
 	}
 }
