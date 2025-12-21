@@ -34,12 +34,8 @@ void initialize() {
 	//Basic intitialization of the screen
 	pros::lcd::initialize();
 
-	pros::lcd::print(0, "Calibrating IMU...");
-    sensors.imu->reset(); // start calibration
 
-    while (sensors.imu->is_calibrating()) {
-        pros::delay(20);
-    }
+	pros::lcd::print(0, "Calibrating IMU...");
 
 	pros::lcd::set_text(1, "Team 1516A");
 	//Add button to screen
@@ -102,6 +98,7 @@ void opcontrol() {
 		//Drivetrain Block
 
 		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
+		pros::lcd::print(2, "arcade mode");
 		
 		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
             chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
@@ -112,8 +109,22 @@ void opcontrol() {
 			pros::lcd::print(1, "coast mode");
 		}
 
-		double heading = sensors.imu->get_heading();
-		pros::lcd::print(0, "Heading: %.2f", heading);
+		//Intake and Hood control
+		
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+			intake_motor.move_voltage(12000);
+			hood_motor.move_voltage(12000);
+		}
+
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+			intake_motor.move_voltage(12000);
+		}
+
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+			intake_motor.move_voltage(-12000);
+			hood_motor.move_voltage(-12000);
+		}
+		
 		pros::delay(50);                               // Run for 100 ms then update
 	}
 }

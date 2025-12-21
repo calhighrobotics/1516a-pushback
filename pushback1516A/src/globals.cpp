@@ -2,6 +2,8 @@
 #include "lemlib/api.hpp"
 #include "pros/motors.h"
 
+
+
 namespace Robot {
     namespace Globals {
         //Initialize the controller variable with the primary controller
@@ -16,6 +18,12 @@ namespace Robot {
         signed char RIGHT_BACK = 18;
         signed char RIGHT_MID = -19;
         signed char RIGHT_FRONT = 20;
+        signed char intake_port = 5;
+        signed char hood_port = 4;
+
+        pros::Motor intake_motor(intake_port);
+        pros::Motor hood_motor(hood_port);
+        
 
 
         //Initialize the motor group for the left motors with ports 1, 2, and 3, denoting the blue gear cartrige
@@ -25,7 +33,21 @@ namespace Robot {
         //The negative sign for the ports indicate the motors will run in reverse, as one side always must
         pros::MotorGroup right({RIGHT_BACK, RIGHT_MID, RIGHT_FRONT}, pros::v5::MotorGears::blue);
         
-        pros::Imu imu(1); // imu on port 1
+        //Rotation sensor ports
+        uint8_t rot_sensor_horiz = 2;
+        uint8_t rot_sensor_vert = 12;
+
+        //Horizontal sensor
+        pros::Rotation rotation_horiz(rot_sensor_horiz);
+        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, lemlib::Omniwheel::NEW_2, 0); //Distance is 0 inches from center
+
+        //Vertical sensor
+        pros::Rotation rotation_vert(rot_sensor_vert);
+        lemlib::TrackingWheel verticalTracking(&rotation_vert, lemlib::Omniwheel::NEW_2, 0);
+
+        uint8_t imu_port = 1;
+
+        pros::Imu imu(imu_port); // imu on port 1
 
         lemlib::Drivetrain drivetrain(
             &left, // the left motor group
@@ -36,9 +58,9 @@ namespace Robot {
             0 // optimal drift value for all-omni drivetrain
         );
 
-        lemlib::OdomSensors sensors(nullptr,//&vertical_tracking_wheel, // vertical tracking wheel
+        lemlib::OdomSensors sensors(&verticalTracking, // vertical tracking wheel
                                     nullptr, // vertical tracking wheel 2, DNE
-                                    nullptr, //&horizontal_tracking_wheel, // horizontal tracking wheel
+                                    &horizontalTracking, // horizontal tracking wheel
                                     nullptr, // horizontal tracking wheel 2, DNE
                                     &imu // inertial sensor
         );
@@ -68,8 +90,10 @@ namespace Robot {
             500,  // large error timeout (ms)
             5    // slew
         );
+        
 
-    
+
+
         lemlib::ExpoDriveCurve throttleCurve(5, 12, 1.019); // deadband, minOutput, curve
         lemlib::ExpoDriveCurve steerCurve(5, 12, 1.01); // deadband, minOutput, curve
 
