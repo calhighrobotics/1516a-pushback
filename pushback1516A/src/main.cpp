@@ -93,13 +93,15 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	bool piston_state = false;
+	bool button_pressed = false;
 
 	while (true) {
 		//Drivetrain Block
 
-		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
+		chassis.arcade(controller.get_analog(ANALOG_RIGHT_X), controller.get_analog(ANALOG_LEFT_Y));
 		pros::lcd::print(2, "arcade mode");
-		
+		//Brake Mode Control
 		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
             chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 			pros::lcd::print(1, "brake mode");
@@ -112,18 +114,38 @@ void opcontrol() {
 		//Intake and Hood control
 		
 		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-			intake_motor.move_voltage(12000);
-			hood_motor.move_voltage(12000);
-		}
-
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-			intake_motor.move_voltage(12000);
-		}
-
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
 			intake_motor.move_voltage(-12000);
 			hood_motor.move_voltage(-12000);
 		}
+		else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+			intake_motor.move_voltage(-12000);
+		}
+
+		else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+			intake_motor.move_voltage(12000);
+			hood_motor.move_voltage(12000);
+		}
+		else {
+			intake_motor.move_voltage(0);
+			hood_motor.move_voltage(0);
+		}
+
+		if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B) && button_pressed) {
+			if (piston_state) {
+				pros::lcd::print(3, "closing piston");
+				piston.set_value(false);
+				piston_state = false;
+			}
+			else {
+				pros::lcd::print(3, "opening piston");
+				piston.set_value(true);
+				piston_state = true;
+			}
+		}
+
+		button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
+
+
 		
 		pros::delay(50);                               // Run for 100 ms then update
 	}

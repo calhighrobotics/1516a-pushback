@@ -32,6 +32,9 @@ namespace Robot {
         extern pros::MotorGroup left;
         extern pros::MotorGroup right;
 
+        //pneumatics
+        extern pros::ADIDigitalOut piston;
+
         // Drivetrain
         extern lemlib::Drivetrain drivetrain;
 

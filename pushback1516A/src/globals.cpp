@@ -10,14 +10,15 @@ namespace Robot {
         pros::Controller controller(pros::E_CONTROLLER_MASTER);
         
 
-        signed char LEFT_BACK = -10;
-        signed char LEFT_MID = 9;
-        signed char LEFT_FRONT = -8;
+        signed char LEFT_BACK = -1;
+        signed char LEFT_MID = 2;
+        signed char LEFT_FRONT = -3;
 
 
-        signed char RIGHT_BACK = 18;
-        signed char RIGHT_MID = -19;
-        signed char RIGHT_FRONT = 20;
+        signed char RIGHT_BACK = -10;
+        signed char RIGHT_MID = 9;
+        signed char RIGHT_FRONT = -8;
+        
         signed char intake_port = 5;
         signed char hood_port = 4;
 
@@ -34,8 +35,8 @@ namespace Robot {
         pros::MotorGroup right({RIGHT_BACK, RIGHT_MID, RIGHT_FRONT}, pros::v5::MotorGears::blue);
         
         //Rotation sensor ports
-        uint8_t rot_sensor_horiz = 2;
-        uint8_t rot_sensor_vert = 12;
+        uint8_t rot_sensor_horiz = 19;
+        uint8_t rot_sensor_vert = 20;
 
         //Horizontal sensor
         pros::Rotation rotation_horiz(rot_sensor_horiz);
@@ -48,6 +49,10 @@ namespace Robot {
         uint8_t imu_port = 1;
 
         pros::Imu imu(imu_port); // imu on port 1
+
+        #define DIGITAL_SENSOR_PORT 'B'
+
+        pros::ADIDigitalOut piston (DIGITAL_SENSOR_PORT);
 
         lemlib::Drivetrain drivetrain(
             &left, // the left motor group
