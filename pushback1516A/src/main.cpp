@@ -45,7 +45,7 @@ void initialize() {
 	pros::lcd::register_btn1_cb(on_center_button);
 
 	chassis.calibrate();
-	chassis.setPose({0, 0, 0});
+	chassis.setPose(0,0,0);
 
 	// Configure motor brake mode based on brakeMode
 
@@ -81,14 +81,21 @@ void competition_initialize() {}
  * from where it left off.
  */
 
-ASSET(curve1_txt);
+
 void autonomous() {
-	chassis.setPose(0,0,0);
 	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-	chassis.moveToPose(0,-11, 0, 2000, {.minSpeed=72, .earlyExitRange=3});
-	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-	chassis.moveToPose(-10, 23, 40, 3000);
-	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+	chassis.moveToPose(-5, -39, 40, 3000, {.forwards=false, .horizontalDrift = 2, .lead = 0.3});
+	pros::delay(500);
+	chassis.moveToPose(27, 11.5, 0, 3000, {.forwards=true, .horizontalDrift = 2, .lead = 0.5, .minSpeed=72, .earlyExitRange=0.5});
+	chassis.waitUntilDone();
+	pros::delay(1000);
+	chassis.moveToPoint(27, -14, 3000, {.forwards=false, .minSpeed=72, .earlyExitRange=1});
+	chassis.turnToHeading(0, 2000, {}, true);
+	chassis.moveToPose(10, -7, 270, 7000, {.forwards=true, .horizontalDrift = 2, .lead = 0.6, .minSpeed=72, .earlyExitRange=0.5});
+	chassis.moveToPose(6, -60, 180, 7000, {.forwards=true, .horizontalDrift = 2, .lead = 0.5});
+
+
+	
 }	
 
 /**
