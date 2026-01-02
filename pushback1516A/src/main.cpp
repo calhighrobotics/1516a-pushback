@@ -3,9 +3,12 @@
 #include "lemlib/api.hpp"
 #include "pros/misc.h"
 #include "pros/motors.h"
+#include "auton.h"
+
 
 using namespace Robot::Globals;
 using namespace Robot;
+
 
 /**
  * A callback function for LLEMU's center button.
@@ -77,7 +80,16 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+
+ASSET(curve1_txt);
+void autonomous() {
+	chassis.setPose(0,0,0);
+	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+	chassis.moveToPose(0,-11, 0, 2000, {.minSpeed=72, .earlyExitRange=3});
+	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+	chassis.moveToPose(-10, 23, 40, 3000);
+	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+}	
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -94,12 +106,16 @@ void autonomous() {}
  */
 void opcontrol() {
 	bool piston_state = false;
+	bool descore_state = false;
 	bool button_pressed = false;
+	bool button_pressed2 = false;
+	chassis.setPose(0, 0, 0);
 
 	while (true) {
 		//Drivetrain Block
-
-		chassis.arcade(controller.get_analog(ANALOG_RIGHT_X), controller.get_analog(ANALOG_LEFT_Y));
+		#pragma region 
+		pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 		pros::lcd::print(2, "arcade mode");
 		//Brake Mode Control
 		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
@@ -142,11 +158,26 @@ void opcontrol() {
 				piston_state = true;
 			}
 		}
+		if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) && button_pressed2) {
+			if (descore_state) {
+				pros::lcd::print(5, "closing descore");
+				descore.set_value(false);
+				descore_state = false;
+			}
+			else {
+				pros::lcd::print(5, "opening descore");
+				descore.set_value(true);
+				descore_state = true;
+			}
+		}
 
 		button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
+		button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-
-		
-		pros::delay(50);                               // Run for 100 ms then update
+	#pragma endregion
+		//Autonomous Test Block
+		// pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+		// chassis.turnToHeading(180, 10000, {}, true);
+		pros::delay(50);                           // Run for 100 ms then update
 	}
 }

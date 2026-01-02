@@ -34,6 +34,7 @@ namespace Robot {
 
         //pneumatics
         extern pros::ADIDigitalOut piston;
+        extern pros::ADIDigitalOut descore;
 
         // Drivetrain
         extern lemlib::Drivetrain drivetrain;

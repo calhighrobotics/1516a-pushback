@@ -15,9 +15,9 @@ namespace Robot {
         signed char LEFT_FRONT = -3;
 
 
-        signed char RIGHT_BACK = -10;
-        signed char RIGHT_MID = 9;
-        signed char RIGHT_FRONT = -8;
+        signed char RIGHT_BACK = 10;
+        signed char RIGHT_MID = -9;
+        signed char RIGHT_FRONT = 8;
         
         signed char intake_port = 5;
         signed char hood_port = 4;
@@ -40,19 +40,21 @@ namespace Robot {
 
         //Horizontal sensor
         pros::Rotation rotation_horiz(rot_sensor_horiz);
-        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, lemlib::Omniwheel::NEW_2, 0); //Distance is 0 inches from center
+        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, lemlib::Omniwheel::NEW_2, -4.25); //Distance is 0 inches from center
 
         //Vertical sensor
         pros::Rotation rotation_vert(rot_sensor_vert);
-        lemlib::TrackingWheel verticalTracking(&rotation_vert, lemlib::Omniwheel::NEW_2, 0);
+        lemlib::TrackingWheel verticalTracking(&rotation_vert, lemlib::Omniwheel::NEW_2, -0.5625);
 
-        uint8_t imu_port = 1;
+        uint8_t imu_port = 18;
 
-        pros::Imu imu(imu_port); // imu on port 1
+        pros::Imu imu(imu_port); // imu on port 18
 
         #define DIGITAL_SENSOR_PORT 'B'
+        #define DIGITAL_SENSOR_PORT2 'A'
 
         pros::ADIDigitalOut piston (DIGITAL_SENSOR_PORT);
+        pros::ADIDigitalOut descore (DIGITAL_SENSOR_PORT2);
 
         lemlib::Drivetrain drivetrain(
             &left, // the left motor group
@@ -60,7 +62,7 @@ namespace Robot {
             25, //25 inch track width
             lemlib::Omniwheel::NEW_325, //Wheel size
             450, // our drivetrain RPM
-            0 // optimal drift value for all-omni drivetrain
+            2 // optimal drift value for all-omni drivetrain
         );
 
         lemlib::OdomSensors sensors(&verticalTracking, // vertical tracking wheel
@@ -71,36 +73,34 @@ namespace Robot {
         );
 
         // Lateral (forward/backward)
-        lemlib::ControllerSettings lateralPID(
-            10, // kP
-            0,  // kI
-            20, // kD
-            0,  // anti-windup
-            1,  // small error range
-            100, // small error timeout
-            3,   // large error (inches)
-            500,  // large error timeout (ms)
-            5    // slew
+        lemlib::ControllerSettings lateralPID(      60, // proportional gain (kP)
+                                                    0, // integral gain (kI)
+                                                    360, // derivative gain (kD)
+                                                    0, // anti windup
+                                                    0, // small error range, in inches
+                                                    0, // small error range timeout, in milliseconds
+                                                    0, // large error range, in inches
+                                                    0, // large error range timeout, in milliseconds
+                                                    0 // maximum acceleration (slew)
         );
 
         // Angular (turning)
-        lemlib::ControllerSettings angularPID(
-            5,  // kP
-            0,  // kI
-            15, // kD
-            0,  // anti-windup
-            1,  // small error range
-            100,// small error timeout
-            3,   // large error (inches)
-            500,  // large error timeout (ms)
-            5    // slew
+        lemlib::ControllerSettings angularPID(4, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              45, // derivative gain (kD)
+                                              3, // anti windup
+                                              1, // small error range, in inches
+                                              100, // small error range timeout, in milliseconds
+                                              3, // large error range, in inches
+                                              500, // large error range timeout, in milliseconds
+                                              20 // maximum acceleration (slew)
         );
         
 
 
 
         lemlib::ExpoDriveCurve throttleCurve(5, 12, 1.019); // deadband, minOutput, curve
-        lemlib::ExpoDriveCurve steerCurve(5, 12, 1.01); // deadband, minOutput, curve
+        lemlib::ExpoDriveCurve steerCurve(5, 12, 1.025); // deadband, minOutput, curve
 
         lemlib::Chassis chassis(
             drivetrain,
