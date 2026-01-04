@@ -5,10 +5,8 @@
 #include "pros/motors.h"
 #include "auton.h"
 
-
 using namespace Robot::Globals;
 using namespace Robot;
-
 
 /**
  * A callback function for LLEMU's center button.
@@ -16,12 +14,16 @@ using namespace Robot;
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
-void on_center_button() {
+void on_center_button()
+{
 	static bool pressed = false;
 	pressed = !pressed;
-	if (pressed) {
+	if (pressed)
+	{
 		pros::lcd::set_text(2, "I was pressed!");
-	} else {
+	}
+	else
+	{
 		pros::lcd::clear_line(2);
 	}
 }
@@ -32,23 +34,22 @@ void on_center_button() {
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
-	
-	//Basic intitialization of the screen
-	pros::lcd::initialize();
+void initialize()
+{
 
+	// Basic intitialization of the screen
+	pros::lcd::initialize();
 
 	pros::lcd::print(0, "Calibrating IMU...");
 
 	pros::lcd::set_text(1, "Team 1516A");
-	//Add button to screen
+	// Add button to screen
 	pros::lcd::register_btn1_cb(on_center_button);
 
 	chassis.calibrate();
-	chassis.setPose(0,0,0);
+	chassis.setPose(0, 0, 0);
 
 	// Configure motor brake mode based on brakeMode
-
 }
 
 /**
@@ -81,22 +82,45 @@ void competition_initialize() {}
  * from where it left off.
  */
 
-
-void autonomous() {
+void autonomous()
+{
 	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-	chassis.moveToPose(-5, -39, 40, 3000, {.forwards=false, .horizontalDrift = 2, .lead = 0.3});
-	pros::delay(500);
-	chassis.moveToPose(27, 11.5, 0, 3000, {.forwards=true, .horizontalDrift = 2, .lead = 0.5, .minSpeed=72, .earlyExitRange=0.5});
+	chassis.moveToPose(-15, -29, 90, 3000, {.forwards = false, .horizontalDrift = 2, .lead = 0.3});
 	chassis.waitUntilDone();
-	pros::delay(1000);
-	chassis.moveToPoint(27, -14, 3000, {.forwards=false, .minSpeed=72, .earlyExitRange=1});
+
+	intake_motor.move_voltage(-12000);
+	chassis.moveToPoint(15,-29, 2000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 1});
+	chassis.waitUntilDone();
+	piston.set_value(true);
+	chassis.moveToPose(27.5, 9, 0, 3000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5, .minSpeed = 100});
+	chassis.waitUntilDone();
 	chassis.turnToHeading(0, 2000, {}, true);
-	chassis.moveToPose(10, -7, 270, 7000, {.forwards=true, .horizontalDrift = 2, .lead = 0.6, .minSpeed=72, .earlyExitRange=0.5});
-	chassis.moveToPose(6, -60, 180, 7000, {.forwards=true, .horizontalDrift = 2, .lead = 0.5});
+	chassis.waitUntilDone();
 
 
-	
-}	
+	chassis.moveToPoint(27.5, 17, 5000, {.forwards = true});
+	chassis.moveToPoint(29.5, 9, 1000, {.forwards = false});
+	chassis.turnToHeading(0, 2000, {}, true);
+	chassis.waitUntilDone();
+	pros::delay(500);
+	intake_motor.move_voltage(0);
+
+	piston.set_value(false);
+	chassis.moveToPoint(29.5, -16, 2000, {.forwards = false, .minSpeed = 120});
+	//chassis.turnToHeading(0, 2000, {}, true);
+	chassis.waitUntilDone();
+	pros::delay(250);
+
+	chassis.moveToPoint(28.5, -19, 1000, {.forwards = false, .minSpeed = 120}, false);
+	intake_motor.move_voltage(-12000);
+	hood_motor.move_voltage(-12000);
+	pros::delay(3000);
+	intake_motor.move_voltage(0);
+	hood_motor.move_voltage(0);
+
+	chassis.moveToPose(10, -7, 270, 7000, {.forwards = true, .horizontalDrift = 2, .lead = 0.6, .minSpeed = 90, .earlyExitRange = 0.5});
+	chassis.moveToPose(6, -60, 180, 7000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5});
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -111,67 +135,81 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-void opcontrol() {
+void opcontrol()
+{
 	bool piston_state = false;
 	bool descore_state = false;
 	bool button_pressed = false;
 	bool button_pressed2 = false;
 	chassis.setPose(0, 0, 0);
 
-	while (true) {
-		//Drivetrain Block
-		#pragma region 
+	while (true)
+	{
+// Drivetrain Block
+#pragma region
 		pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 		chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 		pros::lcd::print(2, "arcade mode");
-		//Brake Mode Control
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-            chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+		// Brake Mode Control
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
+		{
+			chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 			pros::lcd::print(1, "brake mode");
-        }
-		else{
+		}
+		else
+		{
 			chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 			pros::lcd::print(1, "coast mode");
 		}
 
-		//Intake and Hood control
-		
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+		// Intake and Hood control
+
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
+		{
 			intake_motor.move_voltage(-12000);
 			hood_motor.move_voltage(-12000);
 		}
-		else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+		else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
+		{
 			intake_motor.move_voltage(-12000);
 		}
 
-		else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+		else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X))
+		{
 			intake_motor.move_voltage(12000);
 			hood_motor.move_voltage(12000);
 		}
-		else {
+		else
+		{
 			intake_motor.move_voltage(0);
 			hood_motor.move_voltage(0);
 		}
 
-		if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B) && button_pressed) {
-			if (piston_state) {
+		if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B) && button_pressed)
+		{
+			if (piston_state)
+			{
 				pros::lcd::print(3, "closing piston");
 				piston.set_value(false);
 				piston_state = false;
 			}
-			else {
+			else
+			{
 				pros::lcd::print(3, "opening piston");
 				piston.set_value(true);
 				piston_state = true;
 			}
 		}
-		if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) && button_pressed2) {
-			if (descore_state) {
+		if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) && button_pressed2)
+		{
+			if (descore_state)
+			{
 				pros::lcd::print(5, "closing descore");
 				descore.set_value(false);
 				descore_state = false;
 			}
-			else {
+			else
+			{
 				pros::lcd::print(5, "opening descore");
 				descore.set_value(true);
 				descore_state = true;
@@ -181,10 +219,10 @@ void opcontrol() {
 		button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
 		button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-	#pragma endregion
-		//Autonomous Test Block
-		// pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-		// chassis.turnToHeading(180, 10000, {}, true);
-		pros::delay(50);                           // Run for 100 ms then update
+#pragma endregion
+		// Autonomous Test Block
+		//  pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+		//  chassis.turnToHeading(180, 10000, {}, true);
+		pros::delay(50); // Run for 100 ms then update
 	}
 }
