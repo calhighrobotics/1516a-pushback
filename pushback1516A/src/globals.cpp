@@ -46,7 +46,7 @@ namespace Robot {
         pros::Rotation rotation_vert(rot_sensor_vert);
         lemlib::TrackingWheel verticalTracking(&rotation_vert, lemlib::Omniwheel::NEW_2, -0.5625);
 
-        uint8_t imu_port = 18;
+        uint8_t imu_port = 11;
 
         pros::Imu imu(imu_port); // imu on port 18
 
@@ -85,9 +85,9 @@ namespace Robot {
         );
 
         // Angular (turning)
-        lemlib::ControllerSettings angularPID(10, // proportional gain (kP)
+        lemlib::ControllerSettings angularPID(4, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              80, // derivative gain (kD)
+                                              45, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in inches
                                               25, // small error range timeout, in milliseconds

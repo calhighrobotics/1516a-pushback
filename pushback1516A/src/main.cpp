@@ -89,16 +89,19 @@ void autonomous()
 	chassis.waitUntilDone();
 
 	intake_motor.move_voltage(-12000);
-	chassis.moveToPoint(15,-29, 2000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 1});
+	chassis.moveToPoint(18, -29, 2000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 1});
 	chassis.waitUntilDone();
-	piston.set_value(true);
-	chassis.moveToPose(27.5, 9, 0, 3000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5, .minSpeed = 100});
+	chassis.moveToPose(29.5, 9, 0, 3000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5, .minSpeed = 100});
 	chassis.waitUntilDone();
 	chassis.turnToHeading(0, 2000, {}, true);
 	chassis.waitUntilDone();
+	chassis.moveToPoint(29.5, -10, 3000, {.forwards = false, .minSpeed = 100});
+	piston.set_value(true);
 
+	chassis.moveToPoint(29.5, 40, 2000, {.forwards = true, .minSpeed = 120});
+	chassis.moveToPoint(29.5, -10, 100, {.forwards = false, .minSpeed = 120});
+	chassis.moveToPoint(29.5, 40, 5000, {.forwards = true, .minSpeed = 120});
 
-	chassis.moveToPoint(27.5, 17, 5000, {.forwards = true});
 	chassis.moveToPoint(29.5, 9, 1000, {.forwards = false});
 	chassis.turnToHeading(0, 2000, {}, true);
 	chassis.waitUntilDone();
@@ -107,7 +110,7 @@ void autonomous()
 
 	piston.set_value(false);
 	chassis.moveToPoint(29.5, -16, 2000, {.forwards = false, .minSpeed = 120});
-	//chassis.turnToHeading(0, 2000, {}, true);
+	// chassis.turnToHeading(0, 2000, {}, true);
 	chassis.waitUntilDone();
 	pros::delay(250);
 
@@ -141,88 +144,102 @@ void opcontrol()
 	bool descore_state = false;
 	bool button_pressed = false;
 	bool button_pressed2 = false;
+	double bias = 0.0;
 	chassis.setPose(0, 0, 0);
 
-	while (true)
-	{
-// Drivetrain Block
-#pragma region
-		// pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-		// chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
-		// pros::lcd::print(2, "arcade mode");
-		// // Brake Mode Control
-		// if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
-		// {
-		// 	chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-		// 	pros::lcd::print(1, "brake mode");
-		// }
-		// else
-		// {
-		// 	chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-		// 	pros::lcd::print(1, "coast mode");
-		// }
+	while (true) {
+		// Drivetrain Block
+		//#pragma region
+				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+				pros::screen::print(TEXT_MEDIUM, 2, "imu roll: %.2f", sensors.imu->get_roll());
+				chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
+				if (sensors.imu->get_roll() > 4.0 && (left.get_voltage() > 5000 && right.get_voltage() > 5000))
+				{
+					left.move_voltage(left.get_voltage() - 8000*sensors.imu->get_roll());
+					right.move_voltage(right.get_voltage() - 8000*sensors.imu->get_roll());
+				}
+				else if (sensors.imu->get_roll() < -4.0 && (left.get_voltage() < -5000 && right.get_voltage() < -5000))
+				{
+					left.move_voltage(left.get_voltage() + 8000*sensors.imu->get_roll());
+					right.move_voltage(right.get_voltage() + 8000*sensors.imu->get_roll());
+				}
+				//pros::lcd::print(2, "arcade mode");
+				
+				// Brake Mode Control
+				if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
+				{
+					chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+					pros::lcd::print(1, "brake mode");
+				}
+				else
+				{
+					chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+					pros::lcd::print(1, "coast mode");
+				}
 
-		// // Intake and Hood control
+				pros::screen::print(TEXT_MEDIUM, 3, "left motor temp: %.2f right motor temp: %.2f", left.get_temperature(), right.get_temperature());
+				// Intake and Hood control
 
-		// if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
-		// {
-		// 	intake_motor.move_voltage(-12000);
-		// 	hood_motor.move_voltage(-12000);
-		// }
-		// else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
-		// {
-		// 	intake_motor.move_voltage(-12000);
-		// }
+				if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
+				{
+					intake_motor.move_voltage(-12000);
+					hood_motor.move_voltage(-12000);
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
+				{
+					intake_motor.move_voltage(-12000);
+				}
 
-		// else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X))
-		// {
-		// 	intake_motor.move_voltage(12000);
-		// 	hood_motor.move_voltage(12000);
-		// }
-		// else
-		// {
-		// 	intake_motor.move_voltage(0);
-		// 	hood_motor.move_voltage(0);
-		// }
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X))
+				{
+					intake_motor.move_voltage(12000);
+					hood_motor.move_voltage(12000);
+				}
+				else
+				{
+					intake_motor.move_voltage(0);
+					hood_motor.move_voltage(0);
+				}
 
-		// if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B) && button_pressed)
-		// {
-		// 	if (piston_state)
-		// 	{
-		// 		pros::lcd::print(3, "closing piston");
-		// 		piston.set_value(false);
-		// 		piston_state = false;
-		// 	}
-		// 	else
-		// 	{
-		// 		pros::lcd::print(3, "opening piston");
-		// 		piston.set_value(true);
-		// 		piston_state = true;
-		// 	}
-		// }
-		// if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) && button_pressed2)
-		// {
-		// 	if (descore_state)
-		// 	{
-		// 		pros::lcd::print(5, "closing descore");
-		// 		descore.set_value(false);
-		// 		descore_state = false;
-		// 	}
-		// 	else
-		// 	{
-		// 		pros::lcd::print(5, "opening descore");
-		// 		descore.set_value(true);
-		// 		descore_state = true;
-		// 	}
-		// }
+				if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B) && button_pressed)
+				{
+					if (piston_state)
+					{
+						//pros::lcd::print(3, "closing piston");
+						piston.set_value(false);
+						piston_state = false;
+					}
+					else
+					{
+						//pros::lcd::print(3, "opening piston");
+						piston.set_value(true);
+						piston_state = true;
+					}
+				}
+				if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) && button_pressed2)
+				{
+					if (descore_state)
+					{
+						//pros::lcd::print(5, "closing descore");
+						descore.set_value(false);
+						descore_state = false;
+					}
+					else
+					{
+						//pros::lcd::print(5, "opening descore");
+						descore.set_value(true);
+						descore_state = true;
+					}
+				}
 
-		// button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
-		// button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+				button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
+				button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-#pragma endregion
-		// Autonomous Test Block
-		pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-		chassis.turnToHeading(180,  10000, {}, true);
-		pros::delay(50); // Run for 100 ms then update
+		//#pragma endregion
+				
+				// Autonomous Test Block
+				// pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+				// chassis.turnToHeading(180,  10000, {}, true);
+				// pros::delay(50); // Run for 100 ms then update
 	}
 }
