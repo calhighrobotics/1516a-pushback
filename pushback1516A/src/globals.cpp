@@ -50,6 +50,9 @@ namespace Robot {
 
         pros::Imu imu(imu_port); // imu on port 18
 
+        #define DISTANCE_PORT 7
+        pros::Distance distance_sensor(DISTANCE_PORT);
+
         #define DIGITAL_SENSOR_PORT 'B'
         #define DIGITAL_SENSOR_PORT2 'A'
 
@@ -79,8 +82,8 @@ namespace Robot {
                                                     3, // anti windup
                                                     1, // small error range, in inches
                                                     100, // small error range timeout, in milliseconds
-                                                    3, // large error range, in inches
-                                                    500, // large error range timeout, in milliseconds
+                                                    2, // large error range, in inches
+                                                    300, // large error range timeout, in milliseconds
                                                     0 // maximum acceleration (slew)
         );
 

@@ -44,6 +44,7 @@ namespace Robot {
         extern pros::Rotation rotation_vert;
         extern pros::Imu imu;
         extern lemlib::OdomSensors sensors;
+        extern pros::Distance distance_sensor;
 
         // PID Controllers
         extern lemlib::ControllerSettings lateralPID;

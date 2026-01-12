@@ -84,45 +84,8 @@ void competition_initialize() {}
 
 void autonomous()
 {
-	pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-	chassis.moveToPose(-15, -29, 90, 3000, {.forwards = false, .horizontalDrift = 2, .lead = 0.3});
-	chassis.waitUntilDone();
+	Autonomous::Auton1(intake_motor, hood_motor, piston, distance_sensor);
 
-	intake_motor.move_voltage(-12000);
-	chassis.moveToPoint(18, -29, 2000, {.forwards = true, .minSpeed = 100, .earlyExitRange = 1});
-	chassis.waitUntilDone();
-	chassis.moveToPose(29.5, 9, 0, 3000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5, .minSpeed = 100});
-	chassis.waitUntilDone();
-	chassis.turnToHeading(0, 2000, {}, true);
-	chassis.waitUntilDone();
-	chassis.moveToPoint(29.5, -10, 3000, {.forwards = false, .minSpeed = 100});
-	piston.set_value(true);
-
-	chassis.moveToPoint(29.5, 40, 2000, {.forwards = true, .minSpeed = 120});
-	chassis.moveToPoint(29.5, -10, 100, {.forwards = false, .minSpeed = 120});
-	chassis.moveToPoint(29.5, 40, 5000, {.forwards = true, .minSpeed = 120});
-
-	chassis.moveToPoint(29.5, 9, 1000, {.forwards = false});
-	chassis.turnToHeading(0, 2000, {}, true);
-	chassis.waitUntilDone();
-	pros::delay(500);
-	intake_motor.move_voltage(0);
-
-	piston.set_value(false);
-	chassis.moveToPoint(29.5, -16, 2000, {.forwards = false, .minSpeed = 120});
-	// chassis.turnToHeading(0, 2000, {}, true);
-	chassis.waitUntilDone();
-	pros::delay(250);
-
-	chassis.moveToPoint(28.5, -19, 1000, {.forwards = false, .minSpeed = 120}, false);
-	intake_motor.move_voltage(-12000);
-	hood_motor.move_voltage(-12000);
-	pros::delay(3000);
-	intake_motor.move_voltage(0);
-	hood_motor.move_voltage(0);
-
-	chassis.moveToPose(10, -7, 270, 7000, {.forwards = true, .horizontalDrift = 2, .lead = 0.6, .minSpeed = 90, .earlyExitRange = 0.5});
-	chassis.moveToPose(6, -60, 180, 7000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5});
 }
 
 /**
@@ -152,6 +115,7 @@ void opcontrol()
 		//#pragma region
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 				pros::screen::print(TEXT_MEDIUM, 2, "imu roll: %.2f", sensors.imu->get_roll());
+				pros::screen::print(TEXT_MEDIUM, 4, "distance: %d", distance_sensor.get_distance());
 				chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 				if (sensors.imu->get_roll() > 4.0 && (left.get_voltage() > 5000 && right.get_voltage() > 5000))
 				{

@@ -39,7 +39,8 @@ class Autonomous {
          * @param hood_motor The motor used for the hood.
          * @param piston The pneumatic piston.
          */
-        static void Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::adi::Pneumatics piston);
+        static void Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor);
+        static void Auton2(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor);
 
 };
 } // namespace Robot
