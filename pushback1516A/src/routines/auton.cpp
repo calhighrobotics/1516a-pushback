@@ -8,6 +8,52 @@ using namespace Robot::Globals;
 Autonomous::AUTON_ROUTINE Autonomous::auton = RED_LEFT;
 std::string Autonomous::autonName;
 
+void Autonomous::Auton3(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor) {
+   // Placeholder for a third autonomous routine
+   chassis.setPose(0, 0, 0);
+   pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+   // Add autonomous actions here
+   chassis.moveToPoint(7, 0, 1000, {.forwards = true});
+   chassis.turnToPoint(-21, 30, 1000);
+   chassis.waitUntilDone();
+   chassis.moveToPoint(-21, 30, 2000, {.forwards = true});
+   chassis.waitUntilDone();
+   chassis.turnToHeading(180, 2000);
+   chassis.waitUntilDone();
+   pros::delay(200); 
+
+   chassis.moveToPose(-26, 12, 210, 2000, {.forwards = true, .horizontalDrift = 2, .lead = 0.4, .minSpeed = 70, .earlyExitRange = 1});
+   chassis.moveToPose(-38, 3, 270, 3000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5, .minSpeed = 70});
+   chassis.waitUntilDone();
+   chassis.turnToHeading(180, 2000);
+
+   pros::delay(200);
+   int tube = (chassis.getPose().x + ((distance_sensor.get_distance() - 440) / 25.4));
+   pros::screen::print(pros::E_TEXT_MEDIUM, 4, "tube pos: %d, dis: %d, current: %2f", tube, distance_sensor.get_distance(), chassis.getPose().x);
+   pros::delay(200);
+
+   chassis.moveToPose(tube, 15, 180, 1000, {.forwards = true, .maxSpeed = 80, .minSpeed = 70});
+   chassis.waitUntilDone();
+
+   chassis.moveToPose(tube, -5, 180, 1000, {.forwards = false});
+   chassis.turnToHeading(180, 2000, {}, true);
+   chassis.waitUntilDone();
+   pros::delay(200);
+   int goal = (chassis.getPose().x + ((distance_sensor.get_distance() - 395) / 25.4));
+   pros::screen::print(pros::E_TEXT_MEDIUM, 6, "goal pos: %d, dis: %d, current: %2f", goal, distance_sensor.get_distance(), chassis.getPose().x);
+   pros::delay(200);
+
+   chassis.moveToPose(goal, -22, 180, 2000, {.forwards = false, .horizontalDrift = 2, .lead = 0.4});
+   chassis.waitUntilDone();
+   pros::delay(2000);
+
+   chassis.moveToPose(30, -2, 270, 7000, {.forwards = true, .horizontalDrift = 2, .lead = 0.6, .minSpeed = 90, .earlyExitRange = 0.5});
+	chassis.moveToPose(25, -60, 180, 3000, {.forwards = true, .horizontalDrift = 2, .lead = 0.5});
+   chassis.turnToHeading(180, 2000);
+   chassis.waitUntilDone();
+}
+
+
 
 
 void Autonomous::Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor) {
@@ -59,6 +105,9 @@ void Autonomous::Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    chassis.turnToHeading(180, 2000);
    chassis.waitUntilDone();
 }
+
+
+
 
 void Autonomous::Auton2(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor) {
    chassis.setPose(0, 0, 0);

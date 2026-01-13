@@ -41,6 +41,7 @@ class Autonomous {
          */
         static void Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor);
         static void Auton2(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor);
+        static void Auton3(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::Distance distance_sensor);
 
 };
 } // namespace Robot

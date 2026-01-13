@@ -39,10 +39,6 @@ void initialize()
 
 	// Basic intitialization of the screen
 	pros::lcd::initialize();
-
-	pros::lcd::print(0, "Calibrating IMU...");
-
-	pros::lcd::set_text(1, "Team 1516A");
 	// Add button to screen
 	pros::lcd::register_btn1_cb(on_center_button);
 
@@ -84,7 +80,7 @@ void competition_initialize() {}
 
 void autonomous()
 {
-	Autonomous::Auton1(intake_motor, hood_motor, piston, distance_sensor);
+	Autonomous::Auton3(intake_motor, hood_motor, piston, distance_sensor);
 
 }
 
@@ -117,16 +113,6 @@ void opcontrol()
 				pros::screen::print(TEXT_MEDIUM, 2, "imu roll: %.2f", sensors.imu->get_roll());
 				pros::screen::print(TEXT_MEDIUM, 4, "distance: %d", distance_sensor.get_distance());
 				chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
-				if (sensors.imu->get_roll() > 4.0 && (left.get_voltage() > 5000 && right.get_voltage() > 5000))
-				{
-					left.move_voltage(left.get_voltage() - 8000*sensors.imu->get_roll());
-					right.move_voltage(right.get_voltage() - 8000*sensors.imu->get_roll());
-				}
-				else if (sensors.imu->get_roll() < -4.0 && (left.get_voltage() < -5000 && right.get_voltage() < -5000))
-				{
-					left.move_voltage(left.get_voltage() + 8000*sensors.imu->get_roll());
-					right.move_voltage(right.get_voltage() + 8000*sensors.imu->get_roll());
-				}
 				//pros::lcd::print(2, "arcade mode");
 				
 				// Brake Mode Control

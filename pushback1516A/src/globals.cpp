@@ -83,7 +83,7 @@ namespace Robot {
                                                     1, // small error range, in inches
                                                     100, // small error range timeout, in milliseconds
                                                     2, // large error range, in inches
-                                                    300, // large error range timeout, in milliseconds
+                                                    3600, // large error range timeout, in milliseconds
                                                     0 // maximum acceleration (slew)
         );
 
