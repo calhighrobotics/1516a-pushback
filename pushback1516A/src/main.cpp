@@ -4,9 +4,14 @@
 #include "pros/misc.h"
 #include "pros/motors.h"
 #include "auton.h"
+#include "screen/selector.hpp"
 
 using namespace Robot::Globals;
 using namespace Robot;
+
+struct Systems {
+	selector_screen sel;
+} systems;
 
 /**
  * A callback function for LLEMU's center button.
@@ -41,6 +46,8 @@ void initialize()
 	pros::lcd::initialize();
 	// Add button to screen
 	pros::lcd::register_btn1_cb(on_center_button);
+
+    systems.sel.selector();
 
 	chassis.calibrate();
 	chassis.setPose(0, 0, 0);
@@ -80,7 +87,30 @@ void competition_initialize() {}
 
 void autonomous()
 {
-	Autonomous::Auton3(intake_motor, hood_motor, piston, distance_sensor);
+// 	left.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+// 	right.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+// 	odom_lifter.set_value(false); // keep odom lifter up
+// 	mloader.set_value(true);
+// 	chicken_wing.set_value(true);
+
+// 	pros::delay(500);
+	
+//     chassis.setPose(0, 0, 0);
+    
+//    // Add autonomous actions here
+//     chassis.turnToHeading(180, 10000, {}, false);
+
+// 	chassis.waitUntilDone();
+
+// 	while (true) {
+// 		pros::delay(20);
+// 		pros::lcd::print(0, "Tick Position: %ld", rotation_vert.get_position());
+// 		pros::lcd::print(1, "x: %.2f, y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+// 	}
+	
+	Autonomous::AutoDrive(intake_motor, hood_motor, mloader, odom_lifter, chicken_wing, back_sensor, left_sensor, right_sensor);
+	
+
 
 }
 
@@ -99,19 +129,32 @@ void autonomous()
  */
 void opcontrol()
 {
-	bool piston_state = false;
-	bool descore_state = false;
+	bool mloader_state = false;
+	bool chicken_wing_state = false;
 	bool button_pressed = false;
 	bool button_pressed2 = false;
 	double bias = 0.0;
 	chassis.setPose(0, 0, 0);
 
+	odom_lifter.set_value(false); // keep odom lifter up
+	mloader.set_value(false);
+	chicken_wing.set_value(false);
+
 	while (true) {
 		// Drivetrain Block
 		//#pragma region
+	
+
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-				pros::screen::print(TEXT_MEDIUM, 2, "imu roll: %.2f", sensors.imu->get_roll());
-				pros::screen::print(TEXT_MEDIUM, 4, "distance: %d", distance_sensor.get_distance());
+
+				pros::screen::print(TEXT_MEDIUM, 4, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
+				pros::screen::print(TEXT_MEDIUM, 5, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
+				pros::screen::print(TEXT_MEDIUM, 6, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
+				pros::screen::print(TEXT_MEDIUM, 7, "intake: %2f, hood: %2f", intake_motor.get_temperature(), hood_motor.get_temperature());
+
+				pros::screen::print(TEXT_MEDIUM, 1, "IMU Heading: %.2f", imu.get_heading());
+				pros::screen::print(TEXT_MEDIUM, 2, "Vert Tracking Wheel: %.2f", rotation_vert.get_position() * (lemlib::Omniwheel::NEW_2 / (360.0 * 100)));
+				pros::screen::print(TEXT_MEDIUM, 3, "Horiz Tracking Wheel: %.2f", rotation_horiz.get_position() * (lemlib::Omniwheel::NEW_2 / (360.0 * 100)));
 				chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 				//pros::lcd::print(2, "arcade mode");
 				
@@ -119,15 +162,11 @@ void opcontrol()
 				if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
 				{
 					chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-					pros::lcd::print(1, "brake mode");
 				}
 				else
 				{
 					chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-					pros::lcd::print(1, "coast mode");
 				}
-
-				pros::screen::print(TEXT_MEDIUM, 3, "left motor temp: %.2f right motor temp: %.2f", left.get_temperature(), right.get_temperature());
 				// Intake and Hood control
 
 				if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
@@ -151,45 +190,26 @@ void opcontrol()
 					hood_motor.move_voltage(0);
 				}
 
-				if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B) && button_pressed)
+				if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
 				{
-					if (piston_state)
-					{
-						//pros::lcd::print(3, "closing piston");
-						piston.set_value(false);
-						piston_state = false;
-					}
-					else
-					{
-						//pros::lcd::print(3, "opening piston");
-						piston.set_value(true);
-						piston_state = true;
-					}
-				}
-				if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) && button_pressed2)
-				{
-					if (descore_state)
-					{
-						//pros::lcd::print(5, "closing descore");
-						descore.set_value(false);
-						descore_state = false;
-					}
-					else
-					{
-						//pros::lcd::print(5, "opening descore");
-						descore.set_value(true);
-						descore_state = true;
-					}
+					mloader.set_value(!mloader_state);
+					mloader_state = !mloader_state;
 				}
 
-				button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
-				button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+				if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+				{
+					chicken_wing.set_value(!chicken_wing_state);
+					chicken_wing_state = !chicken_wing_state;
+				}
+
+				//button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
+				//button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
 		//#pragma endregion
 				
 				// Autonomous Test Block
 				// pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 				// chassis.turnToHeading(180,  10000, {}, true);
-				// pros::delay(50); // Run for 100 ms then update
+				pros::delay(20); // Run for 100 ms then update
 	}
 }

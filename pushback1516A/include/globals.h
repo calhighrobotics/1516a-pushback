@@ -21,6 +21,15 @@ namespace Robot {
         extern signed char RIGHT_BACK;
         extern signed char RIGHT_MID;
         extern signed char RIGHT_FRONT;
+
+        extern pros::Motor left_back;
+        extern pros::Motor left_mid;
+        extern pros::Motor left_front;
+
+        extern pros::Motor right_back;
+        extern pros::Motor right_mid;
+        extern pros::Motor right_front;
+
         // Motors
         extern pros::Motor flywheel_motor;
         extern pros::Motor intake_motor;
@@ -33,8 +42,9 @@ namespace Robot {
         extern pros::MotorGroup right;
 
         //pneumatics
-        extern pros::ADIDigitalOut piston;
-        extern pros::ADIDigitalOut descore;
+        extern pros::ADIDigitalOut chicken_wing;
+        extern pros::ADIDigitalOut mloader;
+        extern pros::ADIDigitalOut odom_lifter;
 
         // Drivetrain
         extern lemlib::Drivetrain drivetrain;
@@ -44,7 +54,10 @@ namespace Robot {
         extern pros::Rotation rotation_vert;
         extern pros::Imu imu;
         extern lemlib::OdomSensors sensors;
-        extern pros::Distance distance_sensor;
+
+        extern pros::Distance left_sensor;
+        extern pros::Distance right_sensor;
+        extern pros::Distance back_sensor;
 
         // PID Controllers
         extern lemlib::ControllerSettings lateralPID;

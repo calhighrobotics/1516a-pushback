@@ -26,6 +26,14 @@ namespace Robot {
         pros::Motor hood_motor(hood_port);
         
 
+        pros::Motor left_back (LEFT_BACK, pros::v5::MotorGears::blue);
+        pros::Motor left_mid (LEFT_MID, pros::v5::MotorGears::blue);
+        pros::Motor left_front (LEFT_FRONT, pros::v5::MotorGears::blue);
+
+        pros::Motor right_back (RIGHT_BACK, pros::v5::MotorGears::blue);
+        pros::Motor right_mid (RIGHT_MID, pros::v5::MotorGears::blue);
+        pros::Motor right_front (RIGHT_FRONT, pros::v5::MotorGears::blue);
+
 
         //Initialize the motor group for the left motors with ports 1, 2, and 3, denoting the blue gear cartrige
         pros::MotorGroup left({LEFT_BACK,LEFT_MID, LEFT_FRONT}, pros::v5::MotorGears::blue);
@@ -40,29 +48,39 @@ namespace Robot {
 
         //Horizontal sensor
         pros::Rotation rotation_horiz(rot_sensor_horiz);
-        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, lemlib::Omniwheel::NEW_2, -4.25); //Distance is 0 inches from center
+        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, 2.0f, -0.75); //Distance is 0 inches from center
 
         //Vertical sensor
         pros::Rotation rotation_vert(rot_sensor_vert);
-        lemlib::TrackingWheel verticalTracking(&rotation_vert, lemlib::Omniwheel::NEW_2, -0.5625);
+        lemlib::TrackingWheel verticalTracking(&rotation_vert, 2.0f, -0.5);
 
         uint8_t imu_port = 11;
 
         pros::Imu imu(imu_port); // imu on port 18
 
-        #define DISTANCE_PORT 7
-        pros::Distance distance_sensor(DISTANCE_PORT);
+        #define LEFT_DISTANCE_PORT 7
+        pros::Distance left_sensor(LEFT_DISTANCE_PORT);
 
-        #define DIGITAL_SENSOR_PORT 'B'
-        #define DIGITAL_SENSOR_PORT2 'A'
+        #define RIGHT_DISTANCE_PORT 18
+        pros::Distance right_sensor(RIGHT_DISTANCE_PORT);
 
-        pros::ADIDigitalOut piston (DIGITAL_SENSOR_PORT);
-        pros::ADIDigitalOut descore (DIGITAL_SENSOR_PORT2);
+        #define BACK_DISTANCE_PORT 69
+        pros::Distance back_sensor(BACK_DISTANCE_PORT);
+
+        #define MATCH_LOADER_PORT 'B'
+        #define ODOM_LIFTER_PORT 'C'
+        #define WING_PORT 'A'
+
+        pros::adi::DigitalOut mloader (MATCH_LOADER_PORT);
+        pros::adi::DigitalOut odom_lifter (ODOM_LIFTER_PORT);
+        pros::adi::DigitalOut chicken_wing (WING_PORT);
+
+        
 
         lemlib::Drivetrain drivetrain(
             &left, // the left motor group
             &right, // the right motor group
-            25, //25 inch track width
+            12.75, //25 inch track width
             lemlib::Omniwheel::NEW_325, //Wheel size
             450, // our drivetrain RPM
             2 // optimal drift value for all-omni drivetrain
@@ -76,26 +94,26 @@ namespace Robot {
         );
 
         // Lateral (forward/backward)
-        lemlib::ControllerSettings lateralPID(      85, // proportional gain (kP)
+        lemlib::ControllerSettings lateralPID(      11, // proportional gain (kP)
                                                     0, // integral gain (kI)
-                                                    500, // derivative gain (kD)
-                                                    3, // anti windup
-                                                    1, // small error range, in inches
-                                                    100, // small error range timeout, in milliseconds
-                                                    2, // large error range, in inches
-                                                    3600, // large error range timeout, in milliseconds
+                                                    25, // derivative gain (kD)
+                                                    0, // anti windup
+                                                    0, // small error range, in inches
+                                                    0, // small error range timeout, in milliseconds
+                                                    0, // large error range, in inches
+                                                    0, // large error range timeout, in milliseconds
                                                     0 // maximum acceleration (slew)
         );
 
         // Angular (turning)
-        lemlib::ControllerSettings angularPID(4, // proportional gain (kP)
+        lemlib::ControllerSettings angularPID(7, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              45, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in inches
-                                              25, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
-                                              125, // large error range timeout, in milliseconds
+                                              47, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
                                               0 // maximum acceleration (slew)
         );
         
@@ -103,7 +121,7 @@ namespace Robot {
 
 
         lemlib::ExpoDriveCurve throttleCurve(5, 12, 1.019); // deadband, minOutput, curve
-        lemlib::ExpoDriveCurve steerCurve(5, 12, 1.025); // deadband, minOutput, curve
+        lemlib::ExpoDriveCurve steerCurve(5, 8, 1.05); // deadband, minOutput, curve
 
         lemlib::Chassis chassis(
             drivetrain,

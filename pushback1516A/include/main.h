@@ -78,3 +78,8 @@ void opcontrol(void);
 #endif
 
 #endif  // _PROS_MAIN_H_
+
+#include "screen/selector.hpp"
+#include "pros/apix.h"
+
+using namespace Robot;
