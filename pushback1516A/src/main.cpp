@@ -147,9 +147,9 @@ void opcontrol()
 
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
-				pros::screen::print(TEXT_MEDIUM, 4, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
-				pros::screen::print(TEXT_MEDIUM, 5, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
-				pros::screen::print(TEXT_MEDIUM, 6, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
+				controller.print(0, 0, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
+				controller.print(1, 0, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
+				controller.print(2, 0, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
 				pros::screen::print(TEXT_MEDIUM, 7, "intake: %2f, hood: %2f", intake_motor.get_temperature(), hood_motor.get_temperature());
 
 				pros::screen::print(TEXT_MEDIUM, 1, "IMU Heading: %.2f", imu.get_heading());

@@ -40,7 +40,7 @@ class Autonomous {
             * @param puncher A reference to the Puncher object.
             * @param autono A boolean value indicating whether to use autonomous mode.
             */
-        static void AutoDrive(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::ADIDigitalOut odom_lifter, pros::ADIDigitalOut descore, pros::Distance back_sensor, pros::Distance left_sensor, pros::Distance right_sensor);
+        static  void AutoDrive(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::ADIDigitalOut odom_lifter, pros::ADIDigitalOut descore, pros::Distance back_sensor, pros::Distance left_sensor, pros::Distance right_sensor);
 
         /**
             * @brief Switches the autonomous program.
