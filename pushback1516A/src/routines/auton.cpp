@@ -61,12 +61,12 @@ void Autonomous::Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::
 
    // move to Auton 3
 
-   chassis.moveToPoint(41, 7, 1000, {.forwards = true});
+   chassis.moveToPoint(41, 5, 1000, {.forwards = true});
    chassis.waitUntilDone();
    chassis.swingToHeading(0, DriveSide::RIGHT, 2000);
    chassis.waitUntilDone();
 
-   chassis.moveToPoint(21, 73, 2000);
+   chassis.moveToPoint(21, 73, 2000,{.forwards = true});
    chassis.waitUntilDone();
    chassis.turnToHeading(0, 1000);
    chassis.waitUntilDone();
@@ -164,12 +164,12 @@ void Autonomous::Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::
 
    // move to auton 3
 
-   chassis.moveToPoint(41, 7, 1000, {.forwards = true});
+   chassis.moveToPoint(41, 5, 1000, {.forwards = true});
    chassis.waitUntilDone();
    chassis.swingToHeading(0, DriveSide::RIGHT, 2000);
    chassis.waitUntilDone();
 
-   chassis.moveToPoint(21, 73, 2000);
+   chassis.moveToPoint(21, 73, 2000, {.forwards = true});
    chassis.waitUntilDone();
    chassis.turnToHeading(0, 1000);
    chassis.waitUntilDone();
