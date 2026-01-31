@@ -48,11 +48,11 @@ namespace Robot {
 
         //Horizontal sensor
         pros::Rotation rotation_horiz(rot_sensor_horiz);
-        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, 2.0f, -0.75); //Distance is 0 inches from center
+        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, 1.965f, 1.06);
 
         //Vertical sensor
         pros::Rotation rotation_vert(rot_sensor_vert);
-        lemlib::TrackingWheel verticalTracking(&rotation_vert, 2.0f, -0.5);
+        lemlib::TrackingWheel verticalTracking(&rotation_vert, 1.965f, 1.06);
 
         uint8_t imu_port = 11;
 
@@ -70,10 +70,14 @@ namespace Robot {
         #define MATCH_LOADER_PORT 'B'
         #define ODOM_LIFTER_PORT 'C'
         #define WING_PORT 'A'
+        #define INDEXER_PORT 'D'
+        #define EXTENDER_PORT 'E'
 
         pros::adi::DigitalOut mloader (MATCH_LOADER_PORT);
         pros::adi::DigitalOut odom_lifter (ODOM_LIFTER_PORT);
         pros::adi::DigitalOut chicken_wing (WING_PORT);
+        pros::adi::DigitalOut indexer (INDEXER_PORT);
+        pros::adi::DigitalOut extender (EXTENDER_PORT);
 
         
 
@@ -94,9 +98,9 @@ namespace Robot {
         );
 
         // Lateral (forward/backward)
-        lemlib::ControllerSettings lateralPID(      11, // proportional gain (kP)
+        lemlib::ControllerSettings lateralPID(      15, // proportional gain (kP)
                                                     0, // integral gain (kI)
-                                                    25, // derivative gain (kD)
+                                                    120, // derivative gain (kD)
                                                     0, // anti windup
                                                     0, // small error range, in inches
                                                     0, // small error range timeout, in milliseconds

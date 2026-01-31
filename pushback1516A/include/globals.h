@@ -45,6 +45,8 @@ namespace Robot {
         extern pros::ADIDigitalOut chicken_wing;
         extern pros::ADIDigitalOut mloader;
         extern pros::ADIDigitalOut odom_lifter;
+        extern pros::ADIDigitalOut indexer;
+        extern pros::ADIDigitalOut extender;
 
         // Drivetrain
         extern lemlib::Drivetrain drivetrain;

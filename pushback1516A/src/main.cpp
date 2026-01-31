@@ -98,7 +98,7 @@ void autonomous()
 //     chassis.setPose(0, 0, 0);
     
 //    // Add autonomous actions here
-//     chassis.turnToHeading(180, 10000, {}, false);
+//     chassis.moveToPoint(0, 12, 10000);
 
 // 	chassis.waitUntilDone();
 
@@ -108,8 +108,7 @@ void autonomous()
 // 		pros::lcd::print(1, "x: %.2f, y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 // 	}
 	
-	Autonomous::AutoDrive(intake_motor, hood_motor, mloader, odom_lifter, chicken_wing, back_sensor, left_sensor, right_sensor);
-	
+	Autonomous::AutoDrive(intake_motor, hood_motor, mloader, odom_lifter, chicken_wing, indexer, extender, back_sensor, left_sensor, right_sensor);
 
 
 }
@@ -131,19 +130,35 @@ void opcontrol()
 {
 	bool mloader_state = false;
 	bool chicken_wing_state = false;
-	bool button_pressed = false;
-	bool button_pressed2 = false;
+	bool indexer_state = true;
 	double bias = 0.0;
-	chassis.setPose(0, 0, 0);
+	chassis.setPose(0, 0, 0);	
 
-	odom_lifter.set_value(false); // keep odom lifter up
+	//odom_lifter.set_value(true); // keep odom lifter up
 	mloader.set_value(false);
 	chicken_wing.set_value(false);
+	indexer.set_value(true);
+	extender.set_value(true);
+
+// 	pros::delay(200);
+
+// 	chassis.setPose(0, 0, 0);
+    
+//    // Add autonomous actions here
+//     chassis.turnToHeading(180, 1000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 80});
+
+// 	chassis.waitUntilDone();
+// 	//pros::lcd::initialize();
+
+// 	while (true) {
+// 		pros::delay(20);
+// 		pros::screen::print(TEXT_MEDIUM, 3, "Tick Position: %ld", rotation_vert.get_position()/100);
+// 		pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+// 	}
 
 	while (true) {
 		// Drivetrain Block
-		//#pragma region
-	
+		#pragma region 
 
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
@@ -177,6 +192,7 @@ void opcontrol()
 				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
 				{
 					intake_motor.move_voltage(-12000);
+					hood_motor.move_voltage(1000);
 				}
 
 				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X))
@@ -196,20 +212,32 @@ void opcontrol()
 					mloader_state = !mloader_state;
 				}
 
-				if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+				if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
 				{
-					chicken_wing.set_value(!chicken_wing_state);
-					chicken_wing_state = !chicken_wing_state;
+					chicken_wing.set_value(true);
 				}
+				else{
+					chicken_wing.set_value(false);
+				}
+				if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
+				{
+					indexer.set_value(!indexer_state);
+					indexer_state = !indexer_state;
+				}
+
+				// if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y))
+				// {
+				// 	puncher.set_value(true); // fire puncher
+				// 	mloader.set_value(false); // retract mloader to avoid jamming
+				// 	mloader_state = false;
+				// }
 
 				//button_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
 				//button_pressed2 = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-		//#pragma endregion
-				
-				// Autonomous Test Block
-				// pros::lcd::print(0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-				// chassis.turnToHeading(180,  10000, {}, true);
-				pros::delay(20); // Run for 100 ms then update
+				pros::delay(20);
+
+	#pragma endregion
 	}
+
 }
