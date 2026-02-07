@@ -4,6 +4,7 @@
 #include "pros/misc.h"
 #include "pros/motors.h"
 #include "auton.h"
+#include "parser.h"
 #include "screen/selector.hpp"
 
 using namespace Robot::Globals;
@@ -107,6 +108,11 @@ void autonomous()
 // 		pros::lcd::print(0, "Tick Position: %ld", rotation_vert.get_position());
 // 		pros::lcd::print(1, "x: %.2f, y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 // 	}
+
+	std::vector<PathPoint> path = Parser::Parse::parseJerryPath("src\\test.txt");
+
+	pros::screen::print(TEXT_MEDIUM, 1, "size: %d", path.size());
+
 	
 	Autonomous::AutoDrive(intake_motor, hood_motor, mloader, odom_lifter, chicken_wing, indexer, extender, back_sensor, left_sensor, right_sensor);
 
@@ -167,9 +173,9 @@ void opcontrol()
 				controller.print(2, 0, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
 				pros::screen::print(TEXT_MEDIUM, 7, "intake: %2f, hood: %2f", intake_motor.get_temperature(), hood_motor.get_temperature());
 
-				pros::screen::print(TEXT_MEDIUM, 1, "IMU Heading: %.2f", imu.get_heading());
-				pros::screen::print(TEXT_MEDIUM, 2, "Vert Tracking Wheel: %.2f", rotation_vert.get_position() * (lemlib::Omniwheel::NEW_2 / (360.0 * 100)));
-				pros::screen::print(TEXT_MEDIUM, 3, "Horiz Tracking Wheel: %.2f", rotation_horiz.get_position() * (lemlib::Omniwheel::NEW_2 / (360.0 * 100)));
+				pros::screen::print(TEXT_MEDIUM, 1, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
+				pros::screen::print(TEXT_MEDIUM, 2, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
+				pros::screen::print(TEXT_MEDIUM, 3, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
 				chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 				//pros::lcd::print(2, "arcade mode");
 				
