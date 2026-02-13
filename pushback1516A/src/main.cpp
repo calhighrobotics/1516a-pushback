@@ -133,7 +133,7 @@ void opcontrol()
 	bool chicken_wing_state = false;
 	bool indexer_state = true;
 	double bias = 0.0;
-	chassis.setPose(0, 0, 0);	
+	chassis.setPose(-62, -17, 180);	
 
 	//odom_lifter.set_value(true); // keep odom lifter up
 	mloader.set_value(false);
@@ -160,6 +160,7 @@ void opcontrol()
 	while (true) {
 		// Drivetrain Block
 		#pragma region 
+				
 
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 

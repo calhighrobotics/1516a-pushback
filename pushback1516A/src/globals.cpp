@@ -48,11 +48,11 @@ namespace Robot {
 
         //Horizontal sensor
         pros::Rotation rotation_horiz(rot_sensor_horiz);
-        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, 1.965f, 1.06);
+        lemlib::TrackingWheel horizontalTracking(&rotation_horiz, 2.0f, 0.68);
 
         //Vertical sensor
         pros::Rotation rotation_vert(rot_sensor_vert);
-        lemlib::TrackingWheel verticalTracking(&rotation_vert, 1.965f, 1.06);
+        lemlib::TrackingWheel verticalTracking(&rotation_vert, 2.0f, 0.95);
 
         uint8_t imu_port = 11;
 
