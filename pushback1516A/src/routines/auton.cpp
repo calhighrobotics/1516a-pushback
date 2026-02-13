@@ -1,7 +1,11 @@
+#include "lemlib/api.hpp"
+#include "pros/misc.h"
+#include "pros/motors.h"
 #include "auton.h"
 #include "main.h" // IWYU pragma: export
 #include "globals.h"
-#include "parser.h"
+#include "paths.h"
+#include <string>
 
 using namespace Robot;
 using namespace Robot::Globals;
@@ -10,44 +14,66 @@ Autonomous::AUTON_ROUTINE Autonomous::auton = RED_LEFT;
 std::string Autonomous::autonName;
 
 
-void followPath(std::vector<PathPoint> path, int delayTime = 0, bool forwards = true) {
-   bool odom_state = true;
+void followPath(std::vector<PathPoint> path, bool frw = true) {
+   bool odom_state = false;
    bool indexer_state = false;
    bool mloader_state = false;
    bool extender_state = false;
    
+   
    for (int pointNum = 0; pointNum < path.size(); pointNum++) {
       PathPoint point = path[pointNum];
 
-      if (point.type == MOVETOPOINT) {
-         chassis.moveToPoint(point.x, point.y, 500, {.forwards = forwards, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10), .earlyExitRange = 1.0});
-         chassis.waitUntilDone();
-      } else if (point.type == MOVETOPOSE) {
-         chassis.moveToPose(point.x, point.y, point.heading, 700, {.forwards = forwards, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10), .earlyExitRange = 1.0});
-         chassis.waitUntilDone();
-      }
-
-      if (point.action == "INTAKE") {
+      if (point.action.find("INTAKE") != std::string::npos) {
          intake_motor.move_voltage(-12000);
-      } else if (point.action == "SCORE") {
+      } else if (point.action.find("SCORE") != std::string::npos) {
          intake_motor.move_voltage(-12000);
          hood_motor.move_voltage(-12000);
-         pros::delay(delayTime);
-      } else if (point.action == "STOP") {
+      } else if (point.action.find("STOP") != std::string::npos) {
          intake_motor.move_voltage(0);
          hood_motor.move_voltage(0);
-      } else if (point.action == "ODOM") {
+      } else if (point.action.find("ODOM") != std::string::npos) {
          odom_lifter.set_value(!odom_state);
          odom_state = !odom_state;  
-      } else if (point.action == "INDEXER") {
+      } else if (point.action.find("INDEXER") != std::string::npos) {
          indexer.set_value(!indexer_state);
          indexer_state = !indexer_state;
-      } else if (point.action == "MLOADER") {
+      } else if (point.action.find("MLOADER") != std::string::npos) {
          mloader.set_value(!mloader_state);
          mloader_state = !mloader_state;
-      } else if (point.action == "EXTENDER") {
+      } else if (point.action.find("EXTENDER") != std::string::npos) {
          extender.set_value(!extender_state);
          extender_state = !extender_state;
+      }
+
+      if (point.action.find("REVERSE") != std::string::npos) {
+         frw = !frw;
+      }
+
+      if (point.type == "Point") {
+         chassis.turnToPoint(point.x, point.y, point.timeout/2, {.forwards = frw});
+         chassis.waitUntilDone();
+         chassis.moveToPoint(point.x, point.y, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10)});
+         chassis.waitUntilDone();
+         chassis.turnToHeading(point.heading, point.timeout/2);
+         chassis.waitUntilDone();
+         pros::delay(point.delay);
+         pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+
+      } else if (point.type == "Chained") {
+         chassis.moveToPose(point.x, point.y, point.heading, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10), .earlyExitRange = 1.0});
+         pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+
+      }else if (point.type == "Pose") {
+         chassis.moveToPose(point.x, point.y, point.heading, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10)});
+         chassis.waitUntilDone();
+         pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
+         pros::delay(point.delay);
+
+      }else if (point.type == "Swing") {
+         chassis.swingToHeading(point.heading, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10)});
+         chassis.waitUntilDone();
+         pros::delay(point.delay);
       }
    }
 }
@@ -85,15 +111,43 @@ void Autonomous::Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::
 
 
 void Autonomous::Auton2(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::ADIDigitalOut odom_lifter, pros::ADIDigitalOut descore, pros::ADIDigitalOut indexer, pros::ADIDigitalOut extender, pros::Distance back_sensor, pros::Distance left_sensor, pros::Distance right_sensor) {
-   odom_lifter.set_value(true); // lower odom lifter 
    extender.set_value(true); // extend the extender
 
-   chassis.setPose(63, -17, 270);
+   chassis.setPose(-62, -17, 180);
    // chassis.moveToPoint(63, -35, 500, {.forwards = true});
    // chassis.waitUntilDone();
 
-   //followPath("test.txt", 2500, true);
+   followPath(Paths::skills, true);
+
+   // float x = 0;
+   // float y = 0;
+   // chassis.setPose(0,0,0);
+   // chassis.turnToHeading(359, 7000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 70});
+   // chassis.waitUntilDone();
+   // x += chassis.getPose().x;
+   // y += chassis.getPose().y;
+
+   // chassis.setPose(0,0,0);
+   // chassis.turnToHeading(359, 7000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 70});
+   // chassis.waitUntilDone();
+   // x += chassis.getPose().x;
+   // y += chassis.getPose().y;
+
+   // chassis.setPose(0,0,0);
+   // chassis.turnToHeading(359, 7000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 70});
+   // chassis.waitUntilDone();
+   // x += chassis.getPose().x;
+   // y += chassis.getPose().y;
+
+   // chassis.setPose(0,0,0);
+   // chassis.turnToHeading(359, 7000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 70});
+   // chassis.waitUntilDone();
+   // x += chassis.getPose().x;
+   // y += chassis.getPose().y;
+
+   // pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", x, y, chassis.getPose().theta);
    
+
    
 }
 

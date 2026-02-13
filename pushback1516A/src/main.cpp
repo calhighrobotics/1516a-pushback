@@ -4,7 +4,6 @@
 #include "pros/misc.h"
 #include "pros/motors.h"
 #include "auton.h"
-#include "parser.h"
 #include "screen/selector.hpp"
 
 using namespace Robot::Globals;
@@ -108,10 +107,6 @@ void autonomous()
 // 		pros::lcd::print(0, "Tick Position: %ld", rotation_vert.get_position());
 // 		pros::lcd::print(1, "x: %.2f, y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 // 	}
-
-	std::vector<PathPoint> path = Parser::Parse::parseJerryPath("src\\test.txt");
-
-	pros::screen::print(TEXT_MEDIUM, 1, "size: %d", path.size());
 
 	
 	Autonomous::AutoDrive(intake_motor, hood_motor, mloader, odom_lifter, chicken_wing, indexer, extender, back_sensor, left_sensor, right_sensor);
