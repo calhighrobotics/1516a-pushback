@@ -2,16 +2,19 @@
 #include "main.h" // IWYU pragma: export
 #include "globals.h"
 #include <vector>
+#include <cmath>
 
 using namespace Robot;
 using namespace Robot::Globals;
 
 
-std::vector<int> distanceReset(pros::Distance front_sensor, pros::Distance left_sensor, pros::Distance right_sensor, pros::Distance back_sensor, int heading) {
+std::vector<int> distanceReset(pros::Distance front_sensor, pros::Distance left_sensor, pros::Distance right_sensor, pros::Distance back_sensor) {
     int front_distance = (front_sensor.get_distance() / 25.4) + 5; // Convert mm to inches
     int left_distance = (left_sensor.get_distance() / 25.4) + 5; // Convert mm to inches
     int right_distance = (right_sensor.get_distance() / 25.4) + 5; // Convert mm to inches
     int back_distance = (back_sensor.get_distance() / 25.4) + 7; // Convert mm to inches
+
+    int heading = chassis.getPose().theta * (M_PI / 180.0);
 
     int x = 0;
     int y = 0;
