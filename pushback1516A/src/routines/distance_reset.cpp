@@ -25,10 +25,10 @@ std::vector<double> getDistanceReset(bool front, bool back, bool left, bool righ
     // Define your 4 sensors with their local coordinates
     // offset is not correct in direction that does not matter if you do 90 degree turns
     std::vector<Sensor> sensors = {
-        {&front_sensor,  2.7,  0.0, 0, "Front", front},            // Front
-        {&back_sensor,  8.0,  0.0, M_PI, "Back", back},         // Back (rotated 180)
-        {&left_sensor,   0.0, -7.0, M_PI / 2.0, "Left", left},   // Left (rotated 90)
-        {&right_sensor,  0.0,  7.0, -M_PI / 2.0, "Right", right}   // Right (rotated -90)
+        {&front_sensor,  -4.0,  -4.0, 0, "Front", front},            // Front
+        {&back_sensor,  8.0,  8.0, M_PI, "Back", back},         // Back (rotated 180)
+        {&left_sensor,   7.5,  7.5, M_PI / 2.0, "Left", left},   // Left (rotated 90)
+        {&right_sensor,  7.0,  7.0, -M_PI / 2.0, "Right", right}   // Right (rotated -90)
     };
 
     double newX = currentPose.x;
@@ -48,7 +48,7 @@ std::vector<double> getDistanceReset(bool front, bool back, bool left, bool righ
 
         // Check if sensor is facing a wall (within ~5 degrees of cardinal directions)
         // Adjusting X (Facing Left or Right)
-        if (std::abs(sinA) > 0.99 && distInch < 30.0 && sensor.active) { 
+        if (std::abs(sinA) > 0.99 && sensor.active) { 
             // Facing Right (+X)
             if (currentPose.x > 0) newX = 72.0 - (distInch + sensor.offsetY);
             // Facing Left (-X)
@@ -58,7 +58,7 @@ std::vector<double> getDistanceReset(bool front, bool back, bool left, bool righ
         }
         
         // Adjusting Y (Facing Front or Back)
-        if (std::abs(cosA) > 0.99 && distInch < 30.0 && sensor.active) {
+        if (std::abs(cosA) > 0.99 && sensor.active) {
             // Facing Up (+Y)
             if (currentPose.y > 0) newY = 72.0 - (distInch + sensor.offsetX);
             // Facing Down (-Y)

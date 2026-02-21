@@ -135,7 +135,7 @@ void opcontrol()
 	bool chicken_wing_state = false;
 	bool indexer_state = true;
 	double bias = 0.0;
-	chassis.setPose(-46, 0, 180);	
+	chassis.setPose(-45.5, 0, 0);	
 
 	//odom_lifter.set_value(true); // keep odom lifter up
 	mloader.set_value(false);
@@ -167,8 +167,8 @@ void opcontrol()
 
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
-				//std::vector<double> global_position = getDistanceReset();
-				//pros::screen::print(TEXT_MEDIUM, 1, "x: %.2f y: %.2f", global_position[0], global_position[1]);
+				std::vector<double> global_position = getDistanceReset(false, true, false, false);
+				pros::screen::print(TEXT_MEDIUM, 1, "x: %.2f y: %.2f", global_position[0], global_position[1]);
 				//pros::screen::print(TEXT_MEDIUM, 2, "front sensor %i", front_sensor.get_distance());
 
 				// controller.print(0, 0, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
