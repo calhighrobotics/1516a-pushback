@@ -2,5 +2,9 @@
 #include <string>
 #include "api.h"
 #include "pros/adi.hpp"
+#include "main.h" // IWYU pragma: export
+#include "globals.h"
+#include <vector>
+#include <cmath>
 
-extern std::vector<int> distanceReset(pros::Distance front_sensor, pros::Distance left_sensor, pros::Distance right_sensor, pros::Distance back_sensor);
+extern std::vector<double> getDistanceReset(bool front, bool back, bool left, bool right);

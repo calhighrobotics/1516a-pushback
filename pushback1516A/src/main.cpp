@@ -5,6 +5,8 @@
 #include "pros/motors.h"
 #include "auton.h"
 #include "screen/selector.hpp"
+#include "distance_reset.h"
+#include <vector>
 
 using namespace Robot::Globals;
 using namespace Robot;
@@ -133,13 +135,14 @@ void opcontrol()
 	bool chicken_wing_state = false;
 	bool indexer_state = true;
 	double bias = 0.0;
-	chassis.setPose(-62, -17, 180);	
+	chassis.setPose(-46, 0, 180);	
 
 	//odom_lifter.set_value(true); // keep odom lifter up
 	mloader.set_value(false);
 	chicken_wing.set_value(false);
 	indexer.set_value(true);
 	extender.set_value(true);
+	odom_lifter.set_value(true);
 
 // 	pros::delay(200);
 
@@ -164,14 +167,18 @@ void opcontrol()
 
 				pros::screen::print(TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
-				controller.print(0, 0, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
-				controller.print(1, 0, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
-				controller.print(2, 0, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
-				pros::screen::print(TEXT_MEDIUM, 7, "intake: %2f, hood: %2f", intake_motor.get_temperature(), hood_motor.get_temperature());
+				//std::vector<double> global_position = getDistanceReset();
+				//pros::screen::print(TEXT_MEDIUM, 1, "x: %.2f y: %.2f", global_position[0], global_position[1]);
+				//pros::screen::print(TEXT_MEDIUM, 2, "front sensor %i", front_sensor.get_distance());
 
-				pros::screen::print(TEXT_MEDIUM, 1, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
-				pros::screen::print(TEXT_MEDIUM, 2, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
-				pros::screen::print(TEXT_MEDIUM, 3, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
+				// controller.print(0, 0, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
+				// controller.print(1, 0, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
+				// controller.print(2, 0, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
+				// pros::screen::print(TEXT_MEDIUM, 7, "intake: %2f, hood: %2f", intake_motor.get_temperature(), hood_motor.get_temperature());
+
+				// pros::screen::print(TEXT_MEDIUM, 1, "left 1: %2f, right 1: %2f", left_front.get_temperature(), right_front.get_temperature());
+				// pros::screen::print(TEXT_MEDIUM, 2, "left 2: %2f, right 2: %2f", left_mid.get_temperature(), right_mid.get_temperature());
+				// pros::screen::print(TEXT_MEDIUM, 3, "left 3: %2f, right 3: %2f", left_back.get_temperature(), right_back.get_temperature());
 				chassis.arcade(controller.get_analog(ANALOG_LEFT_Y), controller.get_analog(ANALOG_RIGHT_X));
 				//pros::lcd::print(2, "arcade mode");
 				
@@ -226,6 +233,67 @@ void opcontrol()
 					indexer.set_value(!indexer_state);
 					indexer_state = !indexer_state;
 				}
+
+
+				if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT))
+				{
+					chassis.turnToHeading(45, 2000);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
+				{
+					chassis.turnToHeading(135, 2000);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT))
+				{
+					chassis.turnToHeading(315, 2000);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
+				{
+					chassis.turnToHeading(225, 750);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+				{
+					chassis.turnToHeading(90, 750);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
+				{
+					chassis.turnToHeading(180, 750);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT))
+				{
+					chassis.turnToHeading(0, 750);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
+				{
+					chassis.turnToHeading(270, 750);
+					while (chassis.isInMotion()) {
+						pros::delay(20);
+					}
+				}
+				// {
+				// 	odom_lifter.set_value(false);
+				// }
 
 				// if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y))
 				// {

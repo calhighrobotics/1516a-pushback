@@ -12,7 +12,7 @@ namespace Robot {
 
         signed char LEFT_BACK = -1;
         signed char LEFT_MID = 2;
-        signed char LEFT_FRONT = -3;
+        signed char LEFT_FRONT = -7;
 
 
         signed char RIGHT_BACK = 10;
@@ -43,7 +43,7 @@ namespace Robot {
         pros::MotorGroup right({RIGHT_BACK, RIGHT_MID, RIGHT_FRONT}, pros::v5::MotorGears::blue);
         
         //Rotation sensor ports
-        uint8_t rot_sensor_horiz = 19;
+        uint8_t rot_sensor_horiz = -19;
         uint8_t rot_sensor_vert = 20;
 
         //Horizontal sensor
@@ -58,13 +58,17 @@ namespace Robot {
 
         pros::Imu imu(imu_port); // imu on port 18
 
-        #define LEFT_DISTANCE_PORT 7
+
+        #define FRONT_DISTANCE_PORT 12
+        pros::Distance front_sensor(FRONT_DISTANCE_PORT);
+
+        #define LEFT_DISTANCE_PORT 18
         pros::Distance left_sensor(LEFT_DISTANCE_PORT);
 
-        #define RIGHT_DISTANCE_PORT 18
+        #define RIGHT_DISTANCE_PORT 16
         pros::Distance right_sensor(RIGHT_DISTANCE_PORT);
 
-        #define BACK_DISTANCE_PORT 69
+        #define BACK_DISTANCE_PORT 17
         pros::Distance back_sensor(BACK_DISTANCE_PORT);
 
         #define MATCH_LOADER_PORT 'B'

@@ -57,6 +57,7 @@ namespace Robot {
         extern pros::Imu imu;
         extern lemlib::OdomSensors sensors;
 
+        extern pros::Distance front_sensor;
         extern pros::Distance left_sensor;
         extern pros::Distance right_sensor;
         extern pros::Distance back_sensor;

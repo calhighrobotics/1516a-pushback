@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "paths.h"
 #include <string>
+#include "distance_reset.h"
 
 using namespace Robot;
 using namespace Robot::Globals;
@@ -15,33 +16,47 @@ std::string Autonomous::autonName;
 
 
 void followPath(std::vector<PathPoint> path, bool frw = true) {
-   bool odom_state = false;
+   bool odom_state = true;
    bool indexer_state = false;
    bool mloader_state = false;
    bool extender_state = false;
    
+   std::vector<double> global_distance;
    
    for (int pointNum = 0; pointNum < path.size(); pointNum++) {
       PathPoint point = path[pointNum];
 
+      if (point.action.find("DIST") != std::string::npos) {
+         bool front, back, left, right = false;
+         if (point.action.find("FRONT") != std::string::npos) front = true;
+         if (point.action.find("BACK") != std::string::npos) back = true;
+         if (point.action.find("LEFT") != std::string::npos) left = true;
+         if (point.action.find("RIGHT") != std::string::npos) right = true;
+         global_distance = getDistanceReset(front, back, left, right);
+         chassis.setPose(global_distance[0], global_distance[1], chassis.getPose().theta);
+         
+      }
+      
       if (point.action.find("INTAKE") != std::string::npos) {
          intake_motor.move_voltage(-12000);
-      } else if (point.action.find("SCORE") != std::string::npos) {
-         intake_motor.move_voltage(-12000);
-         hood_motor.move_voltage(-12000);
-      } else if (point.action.find("STOP") != std::string::npos) {
+      }
+      if (point.action.find("STOP") != std::string::npos) {
          intake_motor.move_voltage(0);
          hood_motor.move_voltage(0);
-      } else if (point.action.find("ODOM") != std::string::npos) {
+      }
+      if (point.action.find("ODOM") != std::string::npos) {
          odom_lifter.set_value(!odom_state);
          odom_state = !odom_state;  
-      } else if (point.action.find("INDEXER") != std::string::npos) {
+      }
+      if (point.action.find("INDEXER") != std::string::npos) {
          indexer.set_value(!indexer_state);
          indexer_state = !indexer_state;
-      } else if (point.action.find("MLOADER") != std::string::npos) {
+      }
+      if (point.action.find("MLOADER") != std::string::npos) {
          mloader.set_value(!mloader_state);
          mloader_state = !mloader_state;
-      } else if (point.action.find("EXTENDER") != std::string::npos) {
+      }
+      if (point.action.find("EXTENDER") != std::string::npos) {
          extender.set_value(!extender_state);
          extender_state = !extender_state;
       }
@@ -51,30 +66,41 @@ void followPath(std::vector<PathPoint> path, bool frw = true) {
       }
 
       if (point.type == "Point") {
-         chassis.turnToPoint(point.x, point.y, point.timeout/2, {.forwards = frw});
+         chassis.turnToPoint(point.x, point.y, point.timeout, {.forwards = frw});
          chassis.waitUntilDone();
-         chassis.moveToPoint(point.x, point.y, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10)});
+         chassis.moveToPoint(point.x, point.y, point.timeout, {.forwards = frw, .maxSpeed = (point.speed+10), .minSpeed = (point.speed-10)});
          chassis.waitUntilDone();
-         chassis.turnToHeading(point.heading, point.timeout/2);
+         chassis.turnToHeading(point.heading, point.timeout);
          chassis.waitUntilDone();
-         pros::delay(point.delay);
          pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
       } else if (point.type == "Chained") {
-         chassis.moveToPose(point.x, point.y, point.heading, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10), .earlyExitRange = 1.0});
+         chassis.moveToPose(point.x, point.y, point.heading, point.timeout, {.forwards = frw, .maxSpeed = (point.speed+10), .minSpeed = (point.speed-10), .earlyExitRange = 1.0});
          pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
 
       }else if (point.type == "Pose") {
-         chassis.moveToPose(point.x, point.y, point.heading, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10)});
+         chassis.moveToPose(point.x, point.y, point.heading, point.timeout, {.forwards = frw, .maxSpeed = (point.speed+10), .minSpeed = (point.speed-10)});
          chassis.waitUntilDone();
          pros::screen::print(pros::E_TEXT_MEDIUM, 0, "x: %.2f y: %.2f theta: %.2f", chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta);
-         pros::delay(point.delay);
 
-      }else if (point.type == "Swing") {
-         chassis.swingToHeading(point.heading, point.timeout, {.forwards = frw, .maxSpeed = (float) (point.speed+10), .minSpeed = (float) (point.speed-10)});
+      }else if (point.type == "SwingLEFT") {
+         chassis.swingToPoint(point.x, point.y, DriveSide::LEFT, point.timeout, {.forwards = frw, .maxSpeed = (point.speed+10), .minSpeed = (point.speed-10)});
          chassis.waitUntilDone();
-         pros::delay(point.delay);
       }
+      else if (point.type == "SwingRIGHT") {
+         chassis.swingToPoint(point.x, point.y, DriveSide::RIGHT, point.timeout, {.forwards = frw, .maxSpeed = (point.speed+10), .minSpeed = (point.speed-10)});
+         chassis.waitUntilDone();
+         chassis.turnToHeading(point.heading, point.timeout);
+         chassis.waitUntilDone();
+      }
+
+      if (point.action.find("SCORE") != std::string::npos) {
+         intake_motor.move_voltage(-12000);
+         hood_motor.move_voltage(-12000);
+      } 
+      pros::delay(point.delay);
+      intake_motor.move_voltage(0);
+      hood_motor.move_voltage(0);
    }
 }
 
@@ -109,11 +135,15 @@ void Autonomous::Auton1(pros::Motor intake_motor, pros::Motor hood_motor, pros::
 
 
 
-
+// skills auton
 void Autonomous::Auton2(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::ADIDigitalOut odom_lifter, pros::ADIDigitalOut descore, pros::ADIDigitalOut indexer, pros::ADIDigitalOut extender, pros::Distance back_sensor, pros::Distance left_sensor, pros::Distance right_sensor) {
    extender.set_value(true); // extend the extender
+   descore.set_value(true); // deploy descore mechanis
+   odom_lifter.set_value(true);
 
-   chassis.setPose(-62, -17, 180);
+   pros::delay(400);
+
+   chassis.setPose(-45.5, 0, 180);
    // chassis.moveToPoint(63, -35, 500, {.forwards = true});
    // chassis.waitUntilDone();
 
@@ -151,10 +181,13 @@ void Autonomous::Auton2(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    
 }
 
-
+// match auton - left side
 void Autonomous::Auton3(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::ADIDigitalOut odom_lifter, pros::ADIDigitalOut descore, pros::ADIDigitalOut indexer, pros::ADIDigitalOut extender, pros::Distance back_sensor, pros::Distance left_sensor, pros::Distance right_sensor) {
    odom_lifter.set_value(true); // lower odom lifter 
    extender.set_value(true); // extend the extender
+   descore.set_value(true); // deploy descore mechanism
+
+   pros::delay(400);
 
    chassis.setPose(44, 8, 270);
 
@@ -173,9 +206,9 @@ void Autonomous::Auton3(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    intake_motor.move_voltage(0);
    //piston.set_value(false);
 
-   chassis.turnToPoint(46, 47.5, 800);
+   chassis.turnToPoint(46, 49.5, 800);
    chassis.waitUntilDone();
-   chassis.moveToPoint(46, 47.5, 1500);
+   chassis.moveToPoint(46, 49.5, 1500);
    indexer.set_value(true);
 
    chassis.waitUntilDone();
@@ -186,47 +219,47 @@ void Autonomous::Auton3(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    intake_motor.move_voltage(-12000);
 
 
-   chassis.moveToPoint(60, 46, 1000, {.forwards = true, .maxSpeed = 90, .minSpeed = 70});
+   chassis.moveToPoint(60, 48, 1000, {.forwards = true, .maxSpeed = 90, .minSpeed = 70});
    chassis.waitUntilDone();
 
    pros::delay(150);
 
    intake_motor.move_voltage(0);
 
-   chassis.turnToPoint(25, 45, 1000, {.forwards = false});
+   chassis.turnToPoint(25, 47, 1000, {.forwards = false});
    chassis.waitUntilDone();
 
-   chassis.moveToPoint(25, 45, 1500, {.forwards = false});
+   chassis.moveToPoint(25, 47, 1500, {.forwards = false});
    chassis.waitUntilDone();
 
    piston.set_value(false);
 
    intake_motor.move_voltage(-12000);
    hood_motor.move_voltage(-12000);
-   pros::delay(700);
+   pros::delay(2000);
 
    intake_motor.move_voltage(0);
    hood_motor.move_voltage(0);
 
-   chassis.moveToPoint(32, 45, 1000, {.forwards = true});
+   chassis.moveToPoint(32, 47, 1000, {.forwards = true});
    chassis.waitUntilDone();
 
 
-   chassis.swingToHeading(180, DriveSide::RIGHT, 1000);
-   chassis.waitUntilDone();
-   chassis.moveToPoint(35, 31, 600, {.forwards = true});
-   chassis.waitUntilDone();
-   chassis.turnToHeading(270, 500, {.direction = AngularDirection::CW_CLOCKWISE});
-   chassis.waitUntilDone();
-   chassis.moveToPoint(17, 31, 1500, {.forwards = true});
+   // chassis.swingToHeading(180, DriveSide::RIGHT, 1000);
+   // chassis.waitUntilDone();
+   // chassis.moveToPoint(35, 35, 600, {.forwards = true});
+   // chassis.waitUntilDone();
+   // chassis.turnToHeading(270, 500, {.direction = AngularDirection::CW_CLOCKWISE});
+   // chassis.waitUntilDone();
+   // chassis.moveToPoint(17, 35, 1500, {.forwards = true});
 
 }
 
-
+// match auton - right side
 void Autonomous::Auton4(pros::Motor intake_motor, pros::Motor hood_motor, pros::ADIDigitalOut piston, pros::ADIDigitalOut odom_lifter, pros::ADIDigitalOut descore, pros::ADIDigitalOut indexer, pros::ADIDigitalOut extender, pros::Distance back_sensor, pros::Distance left_sensor, pros::Distance right_sensor) {
    odom_lifter.set_value(true); // lower odom lifter 
    extender.set_value(true); // extend the extender
-
+   pros::delay(400);
    chassis.setPose(44, -8, 270);
 
    chassis.moveToPoint(39, -8, 500, {.forwards = true});
@@ -235,18 +268,18 @@ void Autonomous::Auton4(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    // Add autonomous actions here
    intake_motor.move_voltage(-12000);
 
-   chassis.turnToPoint(19, -27, 800);
+   chassis.turnToPoint(23, -24, 800);
    chassis.waitUntilDone();
-   chassis.moveToPoint(22, -23, 1000, {.forwards = true, .maxSpeed = 70, .earlyExitRange = 1.0});
+   chassis.moveToPoint(23, -24, 1000, {.forwards = true, .maxSpeed = 70, .earlyExitRange = 1.0});
    chassis.waitUntilDone();
    piston.set_value(true);
 
    intake_motor.move_voltage(0);
    //piston.set_value(false);
 
-   chassis.turnToPoint(-5, 5, 600, {.forwards = false});
+   chassis.turnToPoint(12, -7, 1500, {.forwards = false});
    chassis.waitUntilDone();
-   chassis.moveToPoint(12, -8, 500, {.forwards = false});
+   chassis.moveToPoint(12, -7, 1500, {.forwards = false});
    chassis.waitUntilDone();
    intake_motor.move_voltage(-12000);
    hood_motor.move_voltage(-12000);
@@ -256,9 +289,9 @@ void Autonomous::Auton4(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    hood_motor.move_voltage(0);
 
 
-   chassis.turnToPoint(46, -48.5, 500);
+   chassis.turnToPoint(46, -46.5, 500);
    chassis.waitUntilDone();
-   chassis.moveToPoint(46, -48.5, 1500, {.forwards = true});
+   chassis.moveToPoint(46, -46.5, 1500, {.forwards = true});
    indexer.set_value(true);
 
    chassis.waitUntilDone();
@@ -269,39 +302,39 @@ void Autonomous::Auton4(pros::Motor intake_motor, pros::Motor hood_motor, pros::
    intake_motor.move_voltage(-12000);
 
 
-   chassis.moveToPoint(60, -47, 500, {.forwards = true, .maxSpeed = 90, .minSpeed = 70});
+   chassis.moveToPoint(64, -45.5, 700, {.forwards = true, .maxSpeed = 110, .minSpeed = 90});
    chassis.waitUntilDone();
 
    pros::delay(500);
 
-   intake_motor.move_voltage(0);
+   //intake_motor.move_voltage(0);
 
-   chassis.turnToPoint(25, -46, 1000, {.forwards = false});
+   chassis.turnToPoint(25, -44, 1000, {.forwards = false});
    chassis.waitUntilDone();
 
-   chassis.moveToPoint(25, -46, 1500, {.forwards = false});
+   chassis.moveToPoint(25, -44, 1500, {.forwards = false, .maxSpeed = 70});
    chassis.waitUntilDone();
 
    piston.set_value(false);
 
    intake_motor.move_voltage(-12000);
    hood_motor.move_voltage(-12000);
-   pros::delay(1500);
+   pros::delay(3000);
 
    intake_motor.move_voltage(0);
    hood_motor.move_voltage(0);
 
-   chassis.moveToPoint(32, -46, 1000, {.forwards = true});
-   chassis.waitUntilDone();
+   // chassis.moveToPoint(32, -44.5, 1000, {.forwards = true});
+   // chassis.waitUntilDone();
 
 
-   chassis.swingToHeading(0, DriveSide::LEFT, 1000);
-   chassis.waitUntilDone();
-   chassis.moveToPoint(35, -31, 600, {.forwards = true});
-   chassis.waitUntilDone();
-   chassis.turnToHeading(90, 500, {.direction = AngularDirection::CW_CLOCKWISE});
-   chassis.waitUntilDone();
-   chassis.moveToPoint(17, -31, 1500, {.forwards = false});
+   // chassis.swingToHeading(0, DriveSide::LEFT, 1000);
+   // chassis.waitUntilDone();
+   // chassis.moveToPoint(35, -33, 600, {.forwards = true});
+   // chassis.waitUntilDone();
+   // chassis.turnToHeading(90, 500, {.direction = AngularDirection::CW_CLOCKWISE});
+   // chassis.waitUntilDone();
+   // chassis.moveToPoint(17, -33, 1500, {.forwards = false});
    // chassis.moveToPoint(39, 17, 2000, {.forwards = true});
    // chassis.waitUntilDone();
 }
@@ -312,16 +345,16 @@ void Autonomous::AutoDrive(pros::Motor intake_motor, pros::Motor hood_motor, pro
    // autonomous Compare the current auton value to run the auton routine
    switch (Autonomous::auton) {
    case RED_LEFT:
-      Auton2(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
+      Auton3(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
       break;
    case RED_RIGHT:
-      Auton2(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
+      Auton4(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
       break;
    case BLUE_LEFT:
-      Auton2(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
+      Auton4(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
       break;
    case BLUE_RIGHT:
-      Auton2(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
+      Auton3(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
       break;
    case SKILLS:
       Auton2(intake_motor, hood_motor, piston, odom_lifter, descore, indexer, extender, back_sensor, left_sensor, right_sensor);
